@@ -1,0 +1,88 @@
+---
+title: "PSTAT 126 Project"
+author: "Celeste Herrera"
+date: "5/14/2020"
+output: pdf_document
+---
+
+# First, we will set the working directory
+setwd()
+getwd()
+setwd("~/Documents/PSTAT 126")
+red_wine = read.csv("winequality-red.csv", header = TRUE)
+
+fixed_acid = red_wine$fixed.acidity
+volatile_acid = red_wine$volatile.acidity
+citric_acid = red_wine$citric.acid
+residual_sugar = red_wine$residual.sugar
+chloride = red_wine$chloride
+free_sulfur = red_wine$free.sulfur.dioxide
+total_sulfur = red_wine$total.sulfur.dioxide
+density = red_wine$density
+ph = red_wine$pH
+sulphates = red_wine$sulphates
+alcohol = red_wine$alcohol
+quality= red_wine$quality
+
+
+#scatterplot matrix
+pairs(red_wine)
+#scatterplot matrix dimensions
+par('mar')
+
+
+#stepwise regression
+mod0 <- lm(quality ~ 1, data = red_wine)
+
+mod1 <- lm(quality ~ fixed.acidity + volatile.acidity + citric.acid + residual.sugar + chlorides + free.sulfur.dioxide + total.sulfur.dioxide + density + pH + sulphates + alcohol, data = red_wine)
+summary(mod1)
+step(mod0, scope = list(lower=mod0, upper = mod1))
+
+model<- lm(quality ~ alcohol + volatile.acidity + sulphates + total.sulfur.dioxide + chlorides + pH + free.sulfur.dioxide, data = red_wine)
+# cor function
+cor_data <- red_wine[,c('alcohol','volatile.acidity','sulphates','total.sulfur.dioxide','chlorides','pH','free.sulfur.dioxide','quality')]
+cor(cor_data)
+
+summary(model)$r.squared
+summary(model)$adjr2
+# leaps procedure
+leaps(x=cbind(fixed_acid, volatile_acid, citric_acid, residual_sugar, chloride, free_sulfur, total_sulfur, density, ph, sulphates, alcohol), y= quality, method = "adjr2")
+
+#Model
+lm(quality ~ alcohol + volatile.acidity + sulphates + total.sulfur.dioxide + chlorides + pH + free.sulfur.dioxide, data = red_wine)
+
+# Initial Residual vs fitted values
+residuals = residuals(model)
+fit = fitted(model)
+plot(fit, residuals, main = "Residuals vs. Fit")
+shapiro.test(residuals)
+
+
+#library(MASS)
+boxcox = boxcox(quality ~ alcohol + volatile.acidity + sulphates + total.sulfur.dioxide + chlorides + pH + free.sulfur.dioxide, data = red_wine, main = "Boxcox plot")
+lambda <- boxcox$x
+log_likelihood <- boxcox$y
+#Normal Q-Q plot
+qqnorm(fit) # skewed
+qqline(fit)
+
+
+#combine data values into one variable
+boxcox_data <- cbind(lambda, log_likelihood)
+
+#sort values so that we can see what lambda is associated with greatest log likelihood value.
+sorted_boxcox_data <- boxcox_data[order(-log_likelihood),]
+head(sorted_boxcox_data, n=10)
+#shows that best lambda is 0.9090909 - basically 1
+#so we don't need to transform?
+
+new_model = lm((quality^0.9090909) ~ alcohol + volatile.acidity + sulphates + total.sulfur.dioxide + chlorides + pH + free.sulfur.dioxide, data = red_wine)
+yhat <- fitted(new_model)
+e <- quality^0.9090909 - yhat
+plot(yhat,e, xlab = "Fitted Values", ylab = "Residuals", main = "Residual vs Fit")
+abline(h=0, lty=2)
+qqnorm(e)
+qqline(e, col="red")
+
+summary(model)
+

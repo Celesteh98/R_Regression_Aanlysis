@@ -1,0 +1,181 @@
+---
+title: "PSTAT 126 Homework 4"
+author: "Celeste Herrera"
+date: "5/15/2020"
+output: pdf_document
+---
+#### **1. This problem uses the water data set in the alr4 package. For this problem, consider the regression problem with response BSAAM, and three predictors as regressors given by OPBPC, OPRC, and OPSLAKE.**
+
+**(a) Examine the scatterplot matrix drawn for these three regressors and the response. What should the correlation matrix look like (i.e., which correlations are large and positive, which are large and negative, and which are small)? Compute the correlation matrix to verify your results. (Hint: the R function cor() can be used to compute a correlation matrix.)**
+
+```{r}
+#install.package(alr4)
+library(alr4)
+data("water")
+OPBPC<- water$OPBPC
+OPRC<- water$OPRC
+OPSLAKE<- water$OPSLAKE
+BSAAM<- water$BSAAM
+pairs(BSAAM ~ OPBPC + OPRC + OPSLAKE, data=water)
+cor_df = as.data.frame(cor(water))
+cor_df
+```
+
+**(b) Get the regression summary for the regression of BSAAM on these three regressors. Include OPBPC, OPRC, and OPSLAKE sequentially. Explain what the “Pr(> |t|)” column of your output means.**
+```{r}
+model = lm(BSAAM ~ OPBPC + OPRC + OPSLAKE, data = water)
+summary(model)
+```
+The Pr(> |t|) column of of the output means the p-value for the certain values within that column.
+
+**(c) Use R to produce an ANOVA table for this regression fit. What is SSR(OPSLAKE|OPBPC, OPRC)? What is SSE(OPBPC, OPRC)?**
+```{r}
+anova(model)
+model.full = lm(formula =BSAAM ~ 1)
+model.reduced = lm(formula =BSAAM ~  OPBPC + OPRC)
+anova(model.reduced,model.full)  
+
+#SSE(OPBPC, OPRC) is 3.3312e+09  
+
+# In order to get SSR(OPSLAKE|OPBPC, OPRC) we need to compute a few things.
+#SSR(OPBPC, OPRC) 
+2.1458e+10 + 2.5616e+09
+
+#SSR(OPSLAKE, OPBPC, OPRC) 
+2.1458e+10 + 2.5616e+09 + 6.4165e+08
+
+#SSR(OPSLAKE|OPBPC, OPRC) is 641650000
+24661250000 - 24019600000
+```
+So we now see that our SSR(OPSLAKE|OPBPC, OPRC) =  641650000 and SSE(OPBPC, OPRC) = 3.3312e+09
+
+#### **2. The lathe1 data set from the alr4 package contains the results of an experiment on characterizing the life of a drill bit in cutting steel on a lathe. Two factors were varied in the experiment, Speed and Feed rate. The response is Life, the total time until the drill bit fails, in minutes. The values of Speed and Feed in the data have been coded by computing**
+$$
+\text{Speed} =\frac{\text{Actual Speed -900}}{300}
+$$
+$$
+\text{Feed} = \frac{\text{Actual feed rate in thousandths of an inch per revolution $-$ 13}} {6}
+$$
+**(a) Starting with the full second-order model E(Life | Speed, Feed) = $\beta_{0} + \beta_{1} \text{Speed} + \beta_{2} \text{Feed} + \beta_{11} \text{Speed}^2 + \beta_{22} \text{Feed}^2 + \beta_{12} \text{Speed} \times \text{Feed}$ use the Box-Cox method to show that an appropriate scale for the response is the logarithmic scale.**
+
+```{r}
+#library(alr4)
+data("lathe1")
+life<- lathe1$Life
+speed <- lathe1$Speed
+feed <- lathe1$Feed
+speedsq <-speed^2
+feedsq<- feed^2
+fit<- lm(life~speed + feed +speedsq + feedsq +speed * feed)
+box.cox = boxCox(fit)
+```
+
+**(b) State the null and alternative hypotheses for the overall F-test for this model using log(Life) as the response. Perform the test and summarize results.**
+$H_{0}: \beta_{1} = \beta_{11} = \beta_{12} = \beta_{22} = 0$
+$H_{1}$: At least 1 $\beta_{k} \ne 0$
+
+```{r}
+loglife <- log(life)
+reduced<- lm(loglife~1)
+full<- lm(loglife~ speed+feed+speedsq+feedsq+speed*feed)
+anova(reduced,full)
+```
+The results of loglife show to have a very small p-value which is 3.551e-10 with a relativley large F statistic of 91.236.
+
+**(c) Explain the practical meaning of the hypothesis $H_{0}: \beta_{1} = \beta_{11} = \beta_{12} = 0$ in the context of the above model.**
+
+$H_{0}$: The speed, the speed^2, and speed * feed do not have a relationship with life
+
+**(d) Perform a test for the hypothesis in part (c) and summarize your results.**
+```{r}
+newreduced<- lm(loglife~feed +feedsq)
+anova(newreduced,full)
+```
+
+The p-value given which is 3.726e-10  is very small therefore we do not reject the null hypothesis
+
+#### **3. Consider the following model and the corresponding ANOVA table: $Y =\beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + \epsilon$ where $\epsilon$ is the usual random error and $Y_{i}$ 's are independent. Further assume $R^2 = 0.637$ for the above model.**
+
+**(a) Fill in the missing values (denoted by star) in the ANOVA table.**
+```{r}
+df<- 2
+df_total = 117+2
+df_total
+n <- 120
+sse<- 17.90761
+sst<- sse/(1-.637)
+sst
+r2<- 1-(sse/sst)#formula with value given of 0.637(given)
+r2
+ssr<- sst - sse
+ssr
+ms_regression<- ssr/df
+ms_regression
+ms_error <- 0.15306  # given
+f_stat<- ms_regression/ms_error
+f_stat
+pf(f_stat,2,117, lower.tail = FALSE)
+```
+
+**(b) State the null and alternative hypothesis for the “F-test” in the ANOVA table.**
+
+$H_{0}: \beta_{1} = \beta_{2} = 0$
+$H_{1}:$ Any $\beta_{k}\ne 0 , k=1,2$
+
+**(c) What is the estimated value of $\sigma^{2}$ based on then results shown in the table?**
+
+Based the results given the estimated value of $\sigma^{2}$ is 0.15306, since the MSE is also known to be a unibased estimator of the variance.
+
+#### **4. A psychologist made a small scale study to examine the nature of the relation between an employee’s emotional stability (Y ) and the employee’s ability to perform in a task group (X). Emotional stability was measured by a written test and ability to perform in a task group (X = 1 if able, X = 0 if unable) was evaluated by the supervisor. The results were as follows:**
+
+$$
+\begin{pmatrix}
+i:1&2&3&4&5&6&7&8\\
+Y_{i}:474&619&584&638&399&481&624&582\\
+X_{i}:0&1&0&1&0&1&1&1
+\end{pmatrix}
+$$
+
+**(a) Fit a linear regression and write down the fitted model.**
+```{r}
+yi<-c(474,619,584,638,399,481,624,582)
+xi<-c(0,1,0,1,0,1,1,1)
+
+#fit the linear regression
+yi_xi_fit<- lm(yi~xi)
+```
+
+The fitted model for the dataset is $Y_{i} = \beta_{0} + \beta_{1x_{i}}$. The $Y_{i}$ is the emotional stability of an employee $i$ was able to perform in a taske group, and 0 if employee $i$ was unable to perform in a task group.
+
+**(b) Write down separate estimated regression equations for “able” employees and “unable” employees.**
+```{r}
+summary(yi_xi_fit)
+```
+
+For the summary of the dataset, we notice the estimate regression of the equation is $Y_{i} = 485.67 + 103.13x_{i}$, which is also known to be the same thing as Stability = 485.67 + 103.13(Performance)
+
+The estimated regression for "unable" employees $(x_{i} = 0)$ is $Y_{i} = 485.67$ or Stability = 485.67. The estimated regression equation for "able" employees $(x_{i} = 1)$ is $Y_{i} = 588.8$ or Stability = 588.8
+
+**(c) Is there a linear relationship between X and Y ? Test at 5% level.**
+
+To see if there is a relationship on a linear relationship between X and Y, we will be testing the null hpothesis $H_{0}: \beta-{1} = 0$ Vs. $H_{A}: \beta_{1} \neq 0$. We can test this using the output from the summary function as shown in the previous question part (b). The p-value given is  0.1079, and the p-value is much larger than $\alpha = .05$ so we fail to reject the null hypothesis and conclude that there is not a linear relationship between X and Y.
+
+#### **5. A marketing research trainee in the national office of a chain of shoe stores used the following response function to study seasonal (winter, spring, summer, fall) effects on sales of a certain line of shoes: E(Y) = $\beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + \beta_{3}X_{3}$. The Xs are indicator variables defined as follows:**
+
+**(a) State the response functions for the four types of seasons.**
+
+winter y = $\beta_{0} + \beta_{1} \times x_{1}$  
+spring y = $\beta_{0} + \beta_{2} \times x_{2}\\$
+fall y = $\beta_{0} + \beta_{3} \times x_{3}\\$
+summer y = 0
+
+**(b) Interpret each of the following quantities: (i) $\beta_{0}$ (ii) $\beta_{1}$ (iii) $\beta_{2}$ (iv) $\beta_{3}$**
+
+(i) $\beta_{0}:$ is the unchanged price
+
+(ii) $\beta_{1}:$ Is the changed in price for the winter
+
+(iii) $\beta_{2}:$ Is the changed price for the spring
+
+(iv) $\beta_{3}:$ Is the changed price for the fall
+$$

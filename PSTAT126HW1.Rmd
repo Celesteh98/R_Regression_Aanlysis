@@ -1,0 +1,207 @@
+---
+title: "PSTAT126HW1"
+author: "Celeste Herrera"
+date: "4/03/2020"
+output: html_document
+---
+#### ** In the Htwt data in the alr4 package, ht = height in centrimeters wt = weight in kilograms for a sample of n = 10 18 year-old girls. Interest is in predicting weight from height. **
+
+```{r}
+#install.packages('alr4')
+library(alr4)
+```
+
+**(a) Identify the predictor and response. **
+
+Height is predictor and weight is the response in the dataset of Htwt.
+
+**(b) Draw a scatterplot of wt on the vertical axis versus ht on the horizontal axis. On the basis of this plot, does a simple linear regression model make sense for these data? Why or why not?**
+
+```{r}
+library(alr4)
+data(Htwt)
+plot(Htwt$ht, Htwt$wt,
+     xlab = 'Height in centimeters', ylab = 'Weight in in kilograms', main = 'Scatterplot of Htwt', pch=15, col= 'blue')
+```
+
+The amount of observations given in the plot is too small to know if the simple linear regression should be used.
+
+**(c) Show that $\xbar$ = 165.52, $\ybar$ = 59.47, Sxx = 472.08, Syy = 731.96 and Sxy = 274.79. Compute estimates of the slope and the intercept for the regression of Y on x. Draw the fitted line on your scatterplot.**
+
+```{r}
+xbar <- mean(Htwt$ht)
+xbar
+ybar <- mean(Htwt$wt)
+ybar
+sxx <- sum((Htwt$ht-xbar)^2)
+sxx
+syy <- sum((Htwt$wt-ybar)^2)
+syy
+sxy <-sum((Htwt$ht-xbar)*(Htwt$wt-ybar))  
+sxy
+B1<-sum((Htwt$ht-xbar)*(Htwt$wt-ybar))/sum((Htwt$ht-xbar)^2)
+B1
+Slope_intercept =ybar-B1*xbar
+Slope_intercept
+```
+```{r}
+lml <- lm(Htwt$wt ~ Htwt$ht)
+lml
+summary(lml)
+```
+```{R}
+plot(Htwt$ht, Htwt$wt,
+xlab = 'Height in centimeters', ylab = 'Weight in killograms', main = 'Scatterplot of Htwt', pch =15, col= 'red')
+abline(lml, col='blue')
+```
+
+#### **2. This problem uses the UBSprices data set in the alr4 package.**
+
+**(a) Draw the plot of Y = bigmac2009 versus x = bigmac2003, the price of a Big Mac hamburger in 2009 and 2003. Give a reason why fitting simple linear regression to the figure in this problem is not likely to be appropriate.**
+
+```{R}
+library(alr4)
+data("UBSprices")
+X <-UBSprices$bigmac2003
+X
+Y <-UBSprices$bigmac2009
+Y
+
+plot(X,Y, xlab = 'Big Mac Hamburger in 2003', ylab = 'Big Mac Hamburger in 2009',main = 'Big Mac in 2003 Vs. Big Mac in 2009', pch =1, col = 'blue')
+```
+
+This plot is more sensibly summarized because the plot is hardly showing any correlation swhich leads to showing very minimal variance.
+
+**(b) Plot log(bigmac2009) versus log(bigmac2003) and explain why this graph is more sensibly summa- rized with a linear regression.**
+```{R}
+plot(x=log(UBSprices$bigmac2003),y=log(UBSprices$bigmac2009),xlab = "Big Mac 2003", ylab = "Big Mac 2009", main = 'Big Mac in 2003 vs. Big Mac in 2009', pch =1, col = 'blue' )
+```
+
+The plot above indicates a shows mostly a positive trend with some scattered data.
+
+**(c) Without using the R function lm(), find the least-squares fit regressing log(bigmac2009) on log(bigmac2003) and add the line in the plot in (b).**
+
+```{r}
+x <-log(UBSprices$bigmac2003)
+x
+y<- log(UBSprices$bigmac2009)
+y
+xbar <- mean(x)
+xbar
+ybar <- mean(y)
+ybar
+Sxy <- sum((x-xbar)*(y-ybar))
+Sxy
+Sxx <-sum((x-xbar)^2)
+Sxx
+Slope <- Sxy/Sxx
+Slope
+intercept <- ybar - (xbar*Slope)
+intercept
+plot(x,y,xlab = 'Big Mac Hamburger in 2003', ylab = 'Big Mac Hamburger in 2009',main = 'Big Mac in 2003 vs. Big Mac in 2009', pch =1, col = 'blue')
+abline(intercept,Slope, col = 'orange', lwd = 1)
+```
+
+#### **3. This problem uses the prostate data set in the faraway package.**
+```{r}
+# install.packages("faraway")
+library(faraway)
+```
+
+**(a) Plot lpsa against lcavol. Use the R function lm() to fit the regressions of lpsa on lcavol and lcavol on lpsa.**
+
+```{r}
+library(faraway)
+data(prostate)
+x <- prostate$lpsa
+x
+y <- prostate$lcavol
+y
+plot(x,y, xlab= "lpsa", ylab= "lcavol", main = "lpsa Vs. lcavol", pch =15, col = 'blue')
+```
+
+```{r}
+test <- lm(prostate$lpsa ~ prostate$lcavol)
+test
+summary(test)
+test2 <- lm(prostate$lcavol ~ prostate$lpsa)
+test2
+summary(test2)
+```
+
+**(b) Display both regression lines on the plot. At what point do the two lines intersetct? Give a brief explanation.**
+
+```{r}
+plot(prostate$lpsa, prostate$lcavol, xlab = 'lpsa', ylab = 'lcavol', main = 'lpsa Vs. lcavol', pch = 15, col = 'blue')
+abline(test2, col = 'green')
+test_slope <- 1/ (test2$coeff[2])
+test_slope
+test_intercept <- (-test$coeff[1]/test2$coeff[2])
+test_intercept
+abline(test_intercept,test_slope, col = 'purple')
+```
+
+The regression lines of the plot pass through $\bar{x}$ and $\bar{y}$ for the reason of the property of the linear regression model.
+
+#### **4. This problem uses the data set Heights in the alr4 package. Interest is in predicting dheight by mheight.**
+**(a) Use the R function lm() to fit the regression of the response on the predictor. Draw a scatterplot of the data and add your fitted regression line.**
+
+```{r}
+library(alr4)
+data(Heights)
+plot(Heights$mheight,Heights$dheight,xlab = 'Mothers height', ylab = 'Daughters height', main = 'mheight Vs. dheight', pch = 1, col = 'blue')
+test3 <- lm(Heights$dheight ~ Heights$mheight)
+test3
+abline(test3, col = 'red',lwd =1)
+```
+
+**(b) Compute the (Pearson) correlation coefficient rxy. What does the value of rxy imply about the relationship between dheight and mheight?**
+```{r}
+xbar <-mean(Heights$mheight)
+xbar
+ybar <- mean(Heights$dheight)
+ybar
+Sxx <- sum((Heights$mheight-xbar)^2)
+Sxx
+Syy <- sum((Heights$dheight-ybar)^2)
+Syy
+Sxy <- sum((Heights$mheight-xbar)*(Heights$dheight-ybar))
+Sxy
+rxy <- (Sxy/(sqrt(Sxx*Syy)))
+rxy
+```
+The output of 0.4907094 is a positive correlation around the line to best fit.
+
+#### **5. We are now given data on n observations ($x_{i}$, $Y_{i}$), i = 1, . . . , n. Assume we have a linear model, so that E($Y_{i}$)=$ β_{0}$ + $β_{1}x_{i}$, and let $b_{1}$ = $S_{xy}$/$S_{xx}$ and $b_{0}$ = $\bar{Y}$ - b_{1}\bar{x}$ be the least-square estimates given in lecture.**
+
+**(a) Show that E($S_{xy}$) = $β_{1}S_{xx}$ and E($\bar{Y}$) =  β_{0} + β_{1}\bar{x}$, and use this to conclude that E($b_1$) = $β_{1}$ and E($b_{0}$) = $β_{0}$.In other words, these are unbiased estimators.**
+
+E($s_{xy}$) = $\sum_{i=1}^{n} [E(x_{1}-\bar{x})(y_{1}-\bar{y})]$
+            = $\sum_{i=1}^{n} [E(x_{1}-\bar{x})(y_{1})]$
+            = $\sum_{i=1}^{n} (x_{i}-\bar{x})(β_{0} + β_1x_{i})$
+            = $β_1\sum_{i=1}^{n}(x_{i}-\bar{x})(x_{i})$
+            = $β_1S_{xx}$
+            
+E($\bar{Y}$) = $\frac{1}{n}\sum_{i=1}^{n} [E(Y_{i})]$
+             = $\frac{1}{n}\sum_{i=1}^{n}(β_{0} + β_1x_{i})$
+             = $β_{0} + β_1\bar{x}$
+
+E($b_1$) = $\frac{1}{S_{xx}}\sum_{i=1}^{n} [E(S_{xy})]$
+         = $\frac{1}{S_{xx}}\sum_{i=1}^{n} β_1(S_{xx})$
+         = $β_1$
+         
+E($b_{0}$) = $E[\bar{Y} - b_1\bar{x}]$
+           = $β_{0} + β_1\bar{x}-β_1\bar{x}$
+           = $β_{0}$
+
+
+
+**(b) The fitted values $\hat{Y_i} = b_0 + b_1x_i$ are used as estimates of $E(Y_i)$ and the residuals, 
+$e_i = Y_i - \hat{Y_i}$ are used as surrogates for the unobservable errors $ε_i = Y_i − E(Y_i)$. By assumption, $E(ε_i) = 0$. Show that the residuals satisfy a similar property, namely,$\sum_{i=1}^{n}e_i = 0$.**
+
+$\sum_{i=1}^{n}e_i$ = $\sum_{i=1}^{n}(Y_i - \hat{Y_i})$
+                    = $n\bar{Y}-(n\bar{Y}-nb_1\bar{x})-nb_1\bar{x}$
+                    =$n\bar{Y}-n\bar{Y}+nb_1\bar{x}-nb_1\bar{x}$
+                    = 0
+
+

@@ -1,0 +1,257 @@
+---
+title: "PSTAT 126_Hw3"
+author: "Celeste Herrera"
+date: "4/29/2020"
+output: pdf_document
+---
+
+#### **1. This problem uses the UN11 data in the alr4 package.**
+
+**(a) Plot fertility against ppgdp. Fit a linear model regressing fertility on ppgdp and add the fit on the plot. Comment on why this model is not good.**
+
+```{r}
+#install.packages(alr4)
+library(alr4)
+data("UN11")
+# x= the predictor
+# y= the response
+x <- UN11$ppgdp
+y <-UN11$fertility
+plot(x,y, xlab = 'ppgdp', ylab= 'Fertility', main = 'ppgdp vs. Fertility', col = 'red')
+abline(lm(y~x))
+summary(lm(y~x))
+```
+This model is not a good representation because the R-squared is at 19.36%. As well as the plot does not follow the abline as it should.
+
+**(b) Use a “residuals vs fit” plot to check if there is any non-constant variance or non-linearity problem. State the main problem and explain why in one or two sentences.**
+
+```{r}
+# x= the predictor
+# y= the response
+x <- UN11$ppgdp
+y <- UN11$fertility
+xbar <- mean(x)
+ybar <- mean(y)
+fit = lm (y~x)
+yhat = fitted(fit)
+residual = y - yhat
+plot(yhat, residual, xlab = 'Fitted Values', ylab = 'Residual', main = 'Residual vs Fit')
+abline(0,0)
+```
+There appears to be a non-constant variance issue as well as a non-linearity problem. There is no apprearance as any craziness around the 0 line, there are also outliers with a high focus of data being at different end of the fitted values. There is also a positive corrlelation among error terms leading to non-independence problem. Which is known as a complex pattern.
+
+**(c) Use a normal Q-Q probability plot to check if the normality assumption is met. State the main problem and explain why in one or two sentences.**
+
+```{r}
+qqnorm(residual, main= "Normal Q-Q Plot of Residuals")
+qqline(residual)
+```
+
+The Normal Q-Q plot shows that the normality test is somewhat met, there is small significant outliers in the top right and the bottom left. There are also many positive and negative variables. It does not follow the linear residual well.
+
+**(d) Shapiro-Wilk test is a test of normality of a numeric variable. The null hypothesis for this test is that the variable is normally distributed. Use the R function shapiro.test() to test if the residuals of the linear fit in part (a) is normally distributed. State the p-value of this test and your conclusion given $\alpha = 0.05$. Does the result support your conclusion in part (c)? (Use the code ?shapiro.test or help(shapiro.test) to understand how to use this function.)**
+
+```{r}
+shapiro.test(residual)
+```
+
+The Shapiro-Wilk test has a p-value less than $\alpha =.05$, therefore we are allowed to state that we can reject the null. The result does support my conclusion for part (c) because there is also a good amount of negative values within the Normal Q-Q plot.
+
+#### **2. This problem uses the teengamb data set in the faraway package. Fit a model with gamble as the response and the other variables as predictors.**
+
+**(a) Predict the amount that men with average (given the data) status, income and verbal score would gamble along with an appropriate 95% confidence interval for the mean amount.**
+```{r}
+#install.packages(faraway)
+library(faraway)
+data("teengamb")
+# x= the predictor
+# y= the response
+sex <- teengamb$sex
+gamble <- teengamb$gamble
+status <- teengamb$status
+status_mean <- mean(status)  # mean of status
+status_mean
+income <- teengamb$income
+income_mean <- mean(income)  # mean of income
+income_mean
+verbal <- teengamb$verbal
+verbal_mean <- mean(verbal)  # mean of verbal
+verbal_mean
+model = lm(gamble~sex+status+income+verbal)
+newdata = data.frame(sex=0,status=status_mean,income=income_mean,verbal=verbal_mean)
+
+#So, the amount that a male with average status, income and verbal score would gamble is 28.24252 95% confidence interval of the gamble amount is calculated by the below command.
+
+predict(model, newdata, interval="confidence", level = .95)
+
+# 95% confidence interval of gamble amount is (18.78277, 37.70227)
+```
+**(b) Repeat the prediction for men with maximal values (for this data) of status, income and verbal score. Which confidence interval is wider and why is the result expected?**
+```{r}
+status_max <- max(status)
+status_max
+income_max <- max(income)
+income_max
+verbal_max <- max(verbal)
+verbal_max
+newdata1 = data.frame(sex=0,status=status_max,income=income_max,verbal=verbal_max)
+
+predict(model, newdata1, interval="confidence")
+```
+
+So, the amount that a male with maximum status, income and verbal score would gamble is 71.30794. The 95% confidence interval of gamble amount is within the range of (42.23237, 100.3835). The maximum is a wider sample behavior compared to the mean behavior and the result is that the max is not a good sample behavior. The max only gave the maximum value compared which created a large range, compared to the mean that gave the average of all the values but had a samller range.   
+
+**(c) Fit a model with sqrt(gamble) as the response but with the same predictors. Now predict the response and give a 95% prediction interval for an individual in (a). Take care to give your answer in the original units of the response.**
+```{r}
+model1 = lm(sqrt(gamble)~sex+status+income+verbal)
+
+x =predict(model1, newdata, interval="prediction", level = .95)
+x^2
+```
+
+The "gamble" is now back to it's original units. 
+
+#### **3. Using the sat data in the faraway package:**
+
+**(a) Fit a model with total sat score as the response and expend and takers as predictors. Test the hypothesis that $\beta_{expend} = \beta_{takers}=0$. Do any of the two predictors have an effect on the response?**
+
+```{r}
+#install.package(faraway)
+library(faraway)
+data(sat)
+total <- sat$total
+takers<- sat$takers
+expend<- sat$expend
+ratio<- sat$ratio
+salary<- sat$salary
+verbal<- sat$verbal
+math<- sat$math
+fit = lm(total~expend+takers)
+summary(fit)
+yhat = fitted(fit)
+yhat
+```
+
+The two predictors $\beta_{expend}$ and  $\beta_{takers}$ do have an effect on one another so we reject the null hypothesis. The p-value is at 2.2e-16 < $\alpha$ =.05
+
+#### **4. This problem uses the trade.union data in the SemiPar package.**
+
+**(a) Plot the wage as a function of age using a different plotting symbol for the different union membership of the world.**
+```{r}
+library(SemiPar)
+data("trade.union")
+wage<- trade.union$wage
+age <- trade.union$age
+union.member<- trade.union$union.member
+plot(age, wage, xlab = 'Age', ylab = 'Wage', main = 'Age Vs. Wage', col = trade.union$union.member+1)
+legend('topright', legend = paste('Union Member', 0:1), col = 1:2, pch=20)
+```
+
+**(b) Determine a transformation on the response wage to facilitate linear modeling with age and union membership as predictors.**
+```{r}
+boxcox <- boxCox(wage~age+union.member)
+lambda <-boxcox$x  #the values for lambda
+loglikelihood<- boxcox$y # the log of the likelihood values
+bc <- cbind(lambda,loglikelihood)
+sorted_bc <- bc[order(-loglikelihood),]
+head(sorted_bc, n=10)
+#please refer to the following graphs for part (b) shown below after boxcox
+```
+
+```{r}
+fit <- lm(log(wage)~age+union.member, data = trade.union)
+yhat<- fitted(fit)
+residual<- log(wage)-yhat
+plot(yhat, residual, xlab = "Fitted Values", ylab = "Residuals", main = "Residual Vs. Fit")
+abline(h=0, lty=2, lwd=3)
+qqnorm(residual, main = 'Normal Q-Q Plot of Residuals')
+qqline(residual, col = 'blue', lwd = 2 )
+```
+
+**(c) Fit a linear model regressing transformed wage on age and union membership. What is the relationship of age and union membership to wage?**
+```{r}
+transformedfit <- lm(log(wage) ~age +union.member)
+plot(age, log(wage), pch= as.numeric(union.member))
+abline(transformedfit, col = 'blue')
+summary(transformedfit)
+```
+
+The relationship of age and union membership to wage is a positive relationship, there is no linearity given in the transformed plot. There is also a very small R-squared which allows us to state there is no type of correlation.
+
+**(d) State the null and alternative hypotheses for the overall F-test for the model in (c). Perform the test and summarize results.**
+```{r}
+anova(transformedfit)
+```
+The null hypotheses is  $\beta_{age} = \beta_{union.member}=0$ then the alternative would be $\beta_{age} \ne \beta_{union.member}\ne 0$. The overall results show there is a very samll p-value. Which in this case is smaller than $\alpha =.05$ so well will reject the null hypotheses.
+
+
+#### **5.The data below shows, for a consumer finance company operating in six cities, the number of competing loan companies operating in the city (X) and the number per thousand of the company’s loans made in that city that are currently delinquent (Y):**
+
+$$
+\begin{matrix}
+i:&1&2&3&4&5&6\\
+X_{i}:&4&1&2&3&3&4\\
+Y_{i}:&16&5&10&15&13&22\\
+\end{matrix}
+$$
+
+**Assume that a simple linear regression model is applicable. Using matrix methods, find**
+
+$$
+Y=
+\begin{pmatrix}
+16\\
+5\\
+10\\
+15\\
+13\\
+22\\
+\end{pmatrix}
+X=
+\begin{pmatrix}
+1&4\\
+1&1\\
+1&2\\
+1&3\\
+1&3\\
+1&4\\
+\end{pmatrix}
+b =
+\begin{pmatrix}
+b_{0}\\
+b_{1}
+\end{pmatrix}
+$$
+
+First order regression model $b_{0} + b_{1} x{i} + \epsilon$ with i =1,2,3,4,5,6
+
+```{r}
+X = matrix(c(rep(1,times =6), 4,1,2,3,3,4), nrow = 6, ncol =2, byrow = FALSE)
+Y= matrix(c(16,5,10,15,13,22),nrow = 6, ncol =1)
+```
+
+The matrix form for the regression model is $Y= X\beta + \epsilon$
+
+**(a) Y Y**
+```{r}
+t(Y)%*%Y
+```
+
+**(b) X X**
+```{r}
+t(X)%*%X
+```
+
+**(c) X Y**
+```{r}
+t(X)%*%Y
+```
+
+**$b_{0}$ and $b_{1}$
+```{r}
+solve(t(X)%*%X)%*%t(X)%*%Y
+```
+
+#### **6. Briefly describe the dataset you would be using for your project. Give its source also. Then write down what the response is and a few important independent variables which you think should be included in the analysis.**
+
+The dataset we would be using for our project is the Wine Quality Data Set (https://archive.ics.uci.edu/ml/datasets/Wine+Quality). We got the data set from the UC Irvine Machine Learning Repository. Our source from our Wine Quality Data Set is Paulo Cortezl, a Proffesor at University of Minho, Guimarães, Portugal. The response varible of our data set is having the data decide the quality of the Wine.  As to our independent variables we are planning to include: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, sulphates, alcohol. I think these variables will be very important in the analysis because we will have specific intresting test as to the quality of wine.

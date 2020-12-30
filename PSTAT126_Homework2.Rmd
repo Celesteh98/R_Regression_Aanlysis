@@ -1,0 +1,207 @@
+---
+title: "PSTAT126 HW2"
+author: "Celeste Herrera"
+date: "4/24/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+### **1. This problem uses the wblake data set in the alr4 package. This data set includes samples of small mouth bass collected in West Bearskin Lake, Minnesota, in 1991. Interest is in predicting length with age. Finish this problem without using lm(). **
+
+```{r}
+#install.packages('alr4')
+library(alr4)
+data("wblake")
+```
+**(a) Compute the regression of length on age, and report the estimates, their standard errors, the value of the coefficient of determination, and the estimate of variance. Write a sentence or two that summarizes the results of these computations.**
+
+```{r}
+# Part (a) solution
+library(alr4)
+data("wblake")
+x= wblake$Age  
+y=wblake$Length
+xbar <- mean(x)
+xbar
+ybar <- mean(y)
+ybar
+n <-length(y)
+n
+ssxy <- sum((x-xbar)*(y-ybar))
+ssxy
+ssxx <- sum((x-xbar)^2)
+ssxx
+ssyy <- sum((y-ybar)^2)
+ssyy
+b1 <- ssxy/ssxx
+b1
+b0 <-ybar-b1*xbar
+b0
+yhat <- b0 +b1*x  #  Reg length on age
+yhat
+sse <- sum((y-yhat)^2)
+sse
+ssr<- sum((yhat-ybar)^2)
+ssr
+ssto <- ssr + sse
+ssto
+r.sq <- (ssr/ssto)  # coefficent of Deter
+r.sq
+mse <- (sse/(n-2))  # mean square error
+mse
+e.variance <- (ssto/(n-1))
+e.variance
+se.b1 <- sqrt(mse/ssxx)  # standard error of slope b1
+se.b1
+se.b0 <-sqrt(mse*((1/n)+(xbar^2/ssxx)))  # standard error of slope b0
+se.b0
+```
+Regression estimates are, b0 = 65.52716 and b1 = 30.32389. For every unit increase in the small mouth base age, we expect small bass length increase by 30.32 mm. The standard erroe of reg coeff are, se.b0 =  3.197388 and se.b1 = 0.6877291. Considering the $r^2$ was positive at 0.816477 variation explained by the explanatory variable. The estimated variance is 820.5847.
+
+
+**(b) Obtain a 99% confidence interval for $\beta_{0}$ from the data. Interpret this interval in the context of the data**
+
+```{r}
+#Part B solution
+library(alr4)
+data("wblake")
+#Calculate the 99% confidence interval for $\beta$ 
+a <- 1-0.99
+a
+t.star <- round(qt(1-a/2,n-2),3)  # t-critical value
+t.star
+me <-t.star*se.b1
+me
+b1-c(me,-me)  # 99% confidence interval for beta1
+
+```
+The 99% confidence interval lies between the two values of (28.54473 , 32.10304). Which indicates for every unit increase in our predictor.
+
+**(c) Obtain a prediction and a 99% prediction interval for a small mouth bass at age 1. Interpret this interval in the context of the data.**
+
+```{r}
+#Part c solution
+library(alr4)
+data("wblake")
+# calculate a prediction and a 99 % prediciton interval for a small mouth at the age of 1.
+x1 <- 1
+x1
+y.pred <- (b0+b1*x1)  # predicted y when x=1
+y.pred
+me <- t.star*sqrt(mse)*sqrt(1+(1/n)+((x1-xbar)^2)/ssxx)
+me
+y.pred - c(me,-me)
+```
+a small mouth bass at the age of 1 has a growing mouth between (21.44138 , 170.26072)
+
+
+### **2. This problem uses the data set Heights data set in the alr4 package. Interest is in predicting dheight by mheight.**
+
+**(a) Compute the regression of dheight on mheight, and report the estimates, their standard errors, the value of the coefficient of determination, and the estimate of the variance.**
+```{r}
+#Part a solution
+library(alr4)
+data("Heights")
+x <- Heights$mheight
+y <- Heights$dheight
+xbar <- mean(x)
+xbar
+ybar <- mean(y)
+ybar
+n <-length(y)
+n
+ssxy <- sum((x-xbar)*(y-ybar))
+ssxy
+ssxx <- sum((x-xbar)^2)
+ssxx
+ssyy <- sum((y-ybar)^2)
+ssyy
+b1 <- ssxy/ssxx
+b1
+b0 <-ybar-b1*xbar
+b0
+yhat <- b0 +b1*x  #  Reg length on age
+yhat
+sse <- sum((y-yhat)^2)
+sse
+ssr<- sum((yhat-ybar)^2)
+ssr
+ssto <- ssr + sse
+ssto
+r.sq <- (ssr/ssto)  # coefficent of Deter
+r.sq
+mse <- (sse/(n-2))  # mean square error
+mse
+e.variance <- (ssto/(n-1))
+e.variance
+se.b1 <- sqrt(mse/ssxx)  # standard error of slope b1
+se.b1
+se.b0 <-sqrt(mse*((1/n)+(xbar^2/ssxx)))  # standard error of slope b0
+se.b0
+```
+
+**(b) For this problem, give an interpretation for $\beta_{0}$ and $\beta_{1}$.**
+
+```{R}
+# Part b solution
+library(alr4)
+data("Heights")
+# Confidence interval of beta1
+b0 <- mean(y) - b1*mean(x)
+b0
+b1 <- ssxy/ssxx
+b1
+```
+For the value of b0 there was a value of 29.91744 which represents a positive slope of heights. While the value of b1 gives a positive correlation value of 0.541747. 
+
+**(c) Obtain a prediction and a 99% prediction interval for a daughter whose mother is 64 inches tall.**
+```{r}
+#Part c solution
+library(alr4)
+attach(Heights)
+#prediction
+fit <- lm(dheight ~ mheight)
+predict(fit,data.frame(mheight=64),interval = "prediction", level = .99)
+```
+### **3. The simple linear regression model Yi = $\beta_{0}$ + $\beta_{1}x_{i}$ + $\epsilon_{i}$, i = 1, . . . , n can also be written as **
+
+Questions a-c solutions on a seprate sheet of paper attached to the  the pdf.
+
+**(d) Simulate a data set with n = 100 observation units such that Yi = 1 + 2xi + $\epsilon_{i}$, i = 1,...,n. $\epsilon_{i}$ follows the standard normal distribution, i.e., a normal distribution with zero mean and unit variance. Use the result in (c) to compute b0 and b1. Show that they are the same as the estimates by lm(). Start with generating x as n = 100 x = seq(0, 1, length = n) (Hint: check the help page of rnorm() about how to simulate normally distributed random variables. Use solve() to get an inverse matrix and use t() to get a transpose matrix).**
+
+
+```{r}
+#Part d solution
+n <- 100
+x <- seq(0,1, length = n) # generates x data
+y <- 1+2*x+rnorm(n) # constructs y data
+i <- seq(1,1, length = n) # array of 1s
+X <- cbind(matrix(i , nrow=n),matrix(x , nrow=n)) # construct the n x 2 matrix X
+Y <- matrix(y , nrow=n) # construct the n x 1 matrix Y
+b <- solve(t(X)%*%X)%*%t(X)%*%Y # take inverse and find the regression coefficients
+b
+fit <- lm(y ~ x)
+summary(fit)$coefficients
+```
+### **4. This problem uses the UBSprices data set in the alr4 package. The international bank UBS regularly produces a report (UBS, 2009) on prices and earnings in major cities throughout the world. Three of the measures they include are prices of basic commodities, namely 1 kg of rice, a 1 kg loaf of bread, and the price of a Big Mac hamburger at McDonalds. An interesting feature of the prices they report is that prices are measured in the minutes of labor required for a “typical” worker in that location to earn enough money to purchase the commodity. Using minutes of labor corrects at least in part for currency fluctuations, prevailing wage rates, and local prices. The data file includes measurements for rice, bread, and Big Mac prices from the 2003 and the 2009 reports. The year 2003 was before the major recession hit much of the world around 2006, and the year 2009 may reflect changes in prices due to the recession. The first graph below is the plot of Y = rice2009 versus x = rice2003, the price of rice in 2009 and 2003, respectively, with the cities corresponding to a few of the points marked.**
+
+**(a) The line with equation Y = x is shown on this plot as the solid line. What is the key difference between points above this line and points below the line?**
+
+For the points above the y = x line, the rice price in 2009 was more than rice price in 2003. while for points below the line, price in 2009 was less than price in 2003.
+
+**(b) Which city had the largest increase in rice price? Which had the largest decrease in rice price?**
+
+Vilnius had the largesrt increase in rice price, while Mumbai had the largest decreae in rice price.
+
+**(c) Give at least one reason why fitting simple linear regression to the figure in this problem is not likely to be appropriate.**
+
+Simple visual inspection of the data and the fitted regression line shows that deviations of the actual data points from the line are quite high. A few outliers like Mumbai, Nairobi and Seoul have distorted the fit quite a lot. If we eliminate even one outlier, we may get a much better fit.
+
+**(d) The second graph represents Y and x using log scales. Explain why this graph and the previous graph suggests that using log scales is preferable if fitting simple linear regression is desired. The linear model is shown by the dashed line.**
+
+The log scale graph would be more of an accurate with a linear regression as the following point cluster which has more of an even spread and less of a skewness than the points on the following first graph. A linear trend is much more suitable because it is clear and recognizable, while the space in between the points appear to have much more of a consitency.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
